@@ -28,6 +28,12 @@ def respond():
     text = update.message.text.encode('utf-8').decode()
     # for debugging purposes only
     print("got text message :", text)
+    bot_welcome = """
+        Welcome to my auto view bot.
+        """
+        # send the welcoming message
+    bot.sendMessage(chat_id=chat_id, text=bot_welcome,
+                        reply_to_message_id=msg_id)
     # the first time you chat with the bot AKA the welcoming message
     if text == "/start":
         # print the welcoming message
@@ -64,7 +70,7 @@ def set_webhook():
 
 @app.route('/')
 def index():
-    return '.'
+    return '.........................................................................'
 
 
 if __name__ == '__main__':
