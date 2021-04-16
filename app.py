@@ -1,7 +1,6 @@
 import re
 from flask import Flask, request
 import telegram
-from telebot.credentials import bot_token, bot_user_name, URL
 
 # Here are some credentials
 bot_token = "1624210226:AAHTw0ZfchbSOpAWB_eW37xvuigk07C9lnc"
