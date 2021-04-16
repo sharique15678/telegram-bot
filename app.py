@@ -34,7 +34,7 @@ def respond():
     Welcome to my auto view bot.
     """
     # send the welcoming message
-    bot.sendMessage(chat_id=chat_id, text=bot_welcome,
+    bot.sendMessage(chat_id=chat_id, text=str(update),
                         reply_to_message_id=msg_id)
     return 'ok'
 
