@@ -4,8 +4,8 @@ import telegram
 
 # Here are some credentials
 bot_token = "1624210226:AAHTw0ZfchbSOpAWB_eW37xvuigk07C9lnc"
-bot_user_name = "sharique15678_view_bot"
-URL = "heroku app link"
+bot_user_name = "@sharique15678_view_bot"
+URL = "https://sharique15678-view-bot.herokuapp.com/"
 
 
 global bot
@@ -28,34 +28,14 @@ def respond():
     text = update.message.text.encode('utf-8').decode()
     # for debugging purposes only
     print("got text message :", text)
+    # the first time you chat with the bot AKA the welcoming message
+    # print the welcoming message
     bot_welcome = """
-        Welcome to my auto view bot.
-        """
-        # send the welcoming message
+    Welcome to my auto view bot.
+    """
+    # send the welcoming message
     bot.sendMessage(chat_id=chat_id, text=bot_welcome,
                         reply_to_message_id=msg_id)
-    # the first time you chat with the bot AKA the welcoming message
-    if text == "/start":
-        # print the welcoming message
-        bot_welcome = """
-        Welcome to my auto view bot.
-        """
-        # send the welcoming message
-        bot.sendMessage(chat_id=chat_id, text=bot_welcome,
-                        reply_to_message_id=msg_id)
-    else:
-        try:
-            bot_welcome = """
-            Welcome to my auto view bot.
-            """
-            # send the welcoming message
-            bot.sendMessage(chat_id=chat_id, text=bot_welcome,
-                            reply_to_message_id=msg_id)
-        except Exception:
-            # if things went wrong
-            bot.sendMessage(
-                chat_id=chat_id, text="There was a problem in the name you used, please enter different name", reply_to_message_id=msg_id)
-
     return 'ok'
 
 
