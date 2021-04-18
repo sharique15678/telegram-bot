@@ -43,7 +43,6 @@ def run(channel, post, proxy):
 		l = addViewToPost(channel, post, s['key'], s['cookie'], 'http://'+proxy)
 		if l != False: print('Proxy '+proxy+' finished its job successfully!')
 	max.release()
-	print('Thread with proxy '+proxy+' has been terminated.')
 
 
 
@@ -59,10 +58,8 @@ for post in range(postStart, postStart + 1000):
 			break
 		p = proxy.split('\n')[0]
 		thread = threading.Thread(target=run,args=(channelName, str(post), p))
-		# thread = threading.Thread(target=run,args=("newtestpython","7",p))
 		threads.append(thread)
 		thread.start()
-		print('Started new thread with proxy '+p)
 
 for t in threads:
 	t.join()

@@ -99,7 +99,6 @@ def save_as_csv(data_tuple) :
 
 
 #functions for doing views incrementation work
-
 def fetchData(channel='google', post='1', proxy=None):
     try:
         r = requests.get('https://t.me/'+channel+'/'+post+'?embed=1', verify=False, timeout=20, proxies={'https':proxy})
@@ -126,8 +125,6 @@ def addViewToPost(channel=None, post=None, key=None, cookie=None, proxy=None):
     except Exception as e :
         return False
 
-
-
 def run(channel, post, proxy):
     max.acquire()
     s = fetchData(channel, post, 'http://'+proxy)
@@ -139,16 +136,16 @@ def run(channel, post, proxy):
     print('Thread with proxy '+proxy+' has been terminated.')
 
 # prints External IP of machine for whielisting
-# IP = requests.get('https://api.ipify.org').text
-# print('Your IP Is ' + IP + ' Please Whitelist It First...')
+IP = requests.get('https://api.ipify.org').text
+print('Your IP Is ' + IP + ' Please Whitelist It First...')
+print("press ctrl + C to exit...")
 
-#get data about channels
-# get_channel_id()
-# get_post_id()
-# get_no_of_views()
-
-# data_tuple = (channel_id,post_id,no_of_views)
-# save_as_csv(data_tuple)
+#get data about channels and save them
+get_channel_id()
+get_post_id()
+get_no_of_views()
+data_tuple = (channel_id,post_id,no_of_views)
+save_as_csv(data_tuple)
 
 
 
