@@ -24,9 +24,9 @@ channel_list = [['Channel ID', "last_post", "views_required"]]
 with open('channels_data.csv') as f:
     channel_list=[tuple(line) for line in csv.reader(f)]
 
-channel_id = channel_list[1][0]
-post_id = channel_list[1][1]
-no_of_views = channel_list[1][2]
+channel_id = channel_list[0][0]
+post_id = channel_list[0][1]
+no_of_views = channel_list[0][2]
 
 # function to validate channels and posts
 def validate(channel=None,post="1") :
@@ -47,7 +47,7 @@ def get_channel_id() :
     global channel_id
     channel_id = input("Enter Channel ID (Press enter to start immidietly) ~> ")
     if channel_id == "":  # if it is blank
-        pass
+        main()
     else:  # if it is any other name
         result = validate(channel_id)
         if result == True :
@@ -58,9 +58,9 @@ def get_channel_id() :
 
 def get_post_id() :
     global post_id
-    post_id = input("Enter Post ID (Press enter for default [1]) ~> ")
+    post_id = input("Enter Post ID (Press enter for All Posts) ~> ")
     if post_id == "":  # if it is blank
-        post_id = 1
+        post_id = 0
     else:  # if it is any other name
         result = validate(channel=channel_id,post=str(post_id))
         if result == True :
@@ -79,23 +79,26 @@ def get_no_of_views() :
         get_no_of_views()
 
 def save_as_csv(data_tuple) :
+    already_in_list_flag = False
     #check if it is already in dictionary
     for channel in channel_list :
         if channel_id == channel[0]:
             already_in_list_flag = True
     if already_in_list_flag == True :
-        # first remove the existing
-        try :
-            channel_list.remove((channel_id,post_id,no_of_views))
-            channel_list.append(data_tuple)
-        except :
-            pass
+        #do nothing
+        pass
     else :
         channel_list.append(data_tuple)
     # save this data in a CSV file
     with open('channels_data.csv','w') as out:
         csv_out=csv.writer(out)
         csv_out.writerows(channel_list)
+
+def delete_csv(data_tuple) :
+    try :
+        channel_list.remove(data_tuple)
+    except :
+        pass
 
 
 #functions for doing views incrementation work
@@ -135,60 +138,81 @@ def run(channel, post, proxy):
     max.release()
     print('Thread with proxy '+proxy+' has been terminated.')
 
-# prints External IP of machine for whielisting
-IP = requests.get('https://api.ipify.org').text
-print('Your IP Is ' + IP + ' Please Whitelist It First...')
-print("press ctrl + C to exit...")
-
-#get data about channels and save them
-get_channel_id()
-get_post_id()
-get_no_of_views()
-data_tuple = (channel_id,post_id,no_of_views)
-save_as_csv(data_tuple)
-
-
+def run_channel(channel,post):
+    max.acquire()
+    now get the number of views required for this
+    views = int(channel[2])
+    if views > len(proxies) :
+        print("No of views are More than Proxies. This will Create Problems")
+        for proxy in proxies :
+            thread = threading.Thread(target=run,args=(channel[0], str(post), proxy))
+            threads.append(thread)
+            thread.start()
+    else :
+        for i in range(views) :
+            thread = threading.Thread(target=run,args=(channel[0], str(post), proxies[i]))
+            threads.append(thread)
+            thread.start()
+    print(post)
+    global last_post
+    last_post = post
+    max.release()
+    print('Thread for post '+str(post)+' has been terminated.')
 
 # here our main program starts
-last_post_flag = False
-post = 0
-while True : #an infinite loop 
-    start_time = int(time())
-    for channel in channel_list[1:] : #get everything except headers
-        if last_post_flag == False :
-            last_post = int(channel[1]) # get the last post
+def main() :
+    last_post_flag = False
+    post = 0
+    while True : #an infinite loop 
+        if len(channel_list) < 2 :
+            sys.exit("No Channel Data Found!. Exiting...")
+        start_time = int(time())
+        for channel in channel_list[1:] : #get everything except headers
+            global last_post
+            if last_post_flag == False :
+                last_post = int(channel[1]) # get the last post
+            else :
+                last_post = post # get the last post
+            #now run a loop untill its all next posts get that number of views
+            while True :
+                post = last_post + 1
+                result = validate(channel=channel[0],post=str(post)) # check if it is valid or invalid post
+                if result == True :
+                    run_channel(channel,post)
+                    thread = threading.Thread(target=run_channel,args=(channel,post))
+                    threads.append(thread)
+                    thread.start()
+                else : # if it is invalid post
+                    print("invalid post")
+                    delete_csv(channel)
+                    data_tuple = (channel[0],post,channel[2])
+                    save_as_csv(data_tuple)
+                    last_post_flag = True
+                    if channel[1] != last_post :
+                        post = last_post
+                    print("All New Posts Were Given Views to channel "+ channel[0] +",All Threads Terminated...")
+                    break
+        checking if operation took more than 60 secs
+        if int(time()) - start_time > 60:
+            pass #do nothing and restart the cycle
         else :
-            last_post = post # get the last post
-        #now run a loop untill its all next posts get that number of views
-        while True :
-            post = last_post + 1
-            result = validate(channel=channel[0],post=str(post)) # check if it is valid or invalid post
-            if result == True :
-                #now get the number of views required for this
-                views = int(channel[2])
-                if views > len(proxies) :
-                    print("no of views are More than Proxies. This will Create Problems")
-                    for proxy in proxies :
-                        thread = threading.Thread(target=run,args=(channel[0], str(post), proxy))
-                        threads.append(thread)
-                        thread.start()
-                else :
-                    for i in range(views) :
-                        thread = threading.Thread(target=run,args=(channel[0], str(post), proxies[i]))
-                        threads.append(thread)
-                        thread.start()
-                        print('thread started')
-                last_post = post
-            else : # if it is invalid post
-                channel_id = channel[0]
-                post_id = channel[1]
-                no_of_views = channel[2]
-                data_tuple = (channel[0],last_post,channel[2])
-                save_as_csv(data_tuple)
-                print("All New Posts Were Given Views to channel "+ channel[0] +",All Threads Terminated...")
-                break
-    # checking if operation took more than 60 secs
-    if int(time()) - start_time > 60:
-        pass #do nothing and restart the cycle
-    else :
-        sleep(60-(int(time()) - start_time))
+            print("In Hybernation ctrl + C to Quit...")
+            sleep(60-(int(time()) - start_time))
+
+def get_and_save_data():
+    prints External IP of machine for whielisting
+    IP = requests.get('https://api.ipify.org').text
+    print('Your IP Is ' + IP + ' Please Whitelist It First...')
+    print("press ctrl + C to exit...")
+
+    #get data about channels and save them
+    get_channel_id()
+    get_post_id()
+    get_no_of_views()
+    data_tuple = (channel_id,post_id,no_of_views)
+    save_as_csv(data_tuple)
+
+if __name__  == "__main__" :
+    get_and_save_data()
+    # start execution
+    main()
