@@ -2,10 +2,11 @@ import requests
 import threading
 import sys
 import csv
+import urllib3
 from time import time,sleep
 
-
-max = threading.Semaphore(value=5) # Increase Or Decrease this value according to your cpu/ram usage.
+urllib3.disable_warnings()
+max = threading.Semaphore(value=500) # Increase Or Decrease this value according to your cpu/ram usage.
 threads = []
 list = open('Proxy_data.txt', 'r')
 proxies_raw = list.readlines()
@@ -18,15 +19,13 @@ for proxy in proxies_raw:
 
 
 
-channel_list = [['Channel ID', "last_post", "views_required"]] 
+channel_list = [('Channel ID', "last_post", "views_required")] 
 # its just to ionitialize a variable we will update its value with file later
 #updating channel_list
-with open('channels_data.csv') as f:
-    channel_list=[tuple(line) for line in csv.reader(f)]
 
-channel_id = channel_list[0][0]
-post_id = channel_list[0][1]
-no_of_views = channel_list[0][2]
+channel_id = ""
+post_id = ""
+no_of_views = ""
 
 # function to validate channels and posts
 def validate(channel=None,post="1") :
@@ -81,6 +80,7 @@ def get_no_of_views() :
 def save_as_csv(data_tuple) :
     already_in_list_flag = False
     #check if it is already in dictionary
+    print(channel_list)
     for channel in channel_list :
         if channel_id == channel[0]:
             already_in_list_flag = True
@@ -210,7 +210,9 @@ def get_and_save_data():
     data_tuple = (channel_id,post_id,no_of_views)
     save_as_csv(data_tuple)
 
-if __name__  == "__main__" :
-    get_and_save_data()
-    # start execution
-    main()
+
+get_and_save_data()
+# start execution
+with open('channels_data.csv') as f:
+    channel_list=[tuple(line) for line in csv.reader(f)]
+main()
