@@ -5,7 +5,7 @@ import csv
 from time import time,sleep
 
 
-max = threading.Semaphore(value=5) # Decrease this value if you encount problems with your cpu/ram usage.
+max = threading.Semaphore(value=5) # Increase Or Decrease this value according to your cpu/ram usage.
 threads = []
 list = open('Proxy_data.txt', 'r')
 proxies_raw = list.readlines()
@@ -140,7 +140,7 @@ def run(channel, post, proxy):
 
 def run_channel(channel,post):
     max.acquire()
-    now get the number of views required for this
+    #now get the number of views required for this
     views = int(channel[2])
     if views > len(proxies) :
         print("No of views are More than Proxies. This will Create Problems")
@@ -153,7 +153,6 @@ def run_channel(channel,post):
             thread = threading.Thread(target=run,args=(channel[0], str(post), proxies[i]))
             threads.append(thread)
             thread.start()
-    print(post)
     global last_post
     last_post = post
     max.release()
@@ -183,16 +182,15 @@ def main() :
                     threads.append(thread)
                     thread.start()
                 else : # if it is invalid post
-                    print("invalid post")
                     delete_csv(channel)
-                    data_tuple = (channel[0],post,channel[2])
+                    data_tuple = (channel[0],post-1,channel[2])
                     save_as_csv(data_tuple)
                     last_post_flag = True
                     if channel[1] != last_post :
                         post = last_post
                     print("All New Posts Were Given Views to channel "+ channel[0] +",All Threads Terminated...")
                     break
-        checking if operation took more than 60 secs
+        #checking if operation took more than 60 secs
         if int(time()) - start_time > 60:
             pass #do nothing and restart the cycle
         else :
@@ -200,7 +198,7 @@ def main() :
             sleep(60-(int(time()) - start_time))
 
 def get_and_save_data():
-    prints External IP of machine for whielisting
+    #prints External IP of machine for whielisting
     IP = requests.get('https://api.ipify.org').text
     print('Your IP Is ' + IP + ' Please Whitelist It First...')
     print("press ctrl + C to exit...")
