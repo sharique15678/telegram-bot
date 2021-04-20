@@ -4,8 +4,8 @@ import sys
 import csv
 import urllib3
 from time import time,sleep
-
 urllib3.disable_warnings()
+
 max = threading.Semaphore(value=500) # Increase Or Decrease this value according to your cpu/ram usage.
 threads = []
 list = open('Proxy_data.txt', 'r')
@@ -17,7 +17,7 @@ for proxy in proxies_raw:
     proxies.append(p)
 
 
-
+global channel_list
 
 channel_list = [('Channel ID', "last_post", "views_required")] 
 # its just to ionitialize a variable we will update its value with file later
@@ -78,14 +78,21 @@ def get_no_of_views() :
         get_no_of_views()
 
 def save_as_csv(data_tuple) :
+    # try:
+    #     print('updating')
+    #     with open('channels_data.csv') as f:
+    #         channel_list=[tuple(line) for line in csv.reader(f)] #update with the file
+    # except :
+    #     pass
     already_in_list_flag = False
     #check if it is already in dictionary
-    print(channel_list)
     for channel in channel_list :
         if channel_id == channel[0]:
-            already_in_list_flag = True
+            print('removed')
+            delete_csv(channel) #first remove then update new values
+            channel_list.append(data_tuple)
     if already_in_list_flag == True :
-        #do nothing
+        #do nothing (just for not being in a for loop)
         pass
     else :
         channel_list.append(data_tuple)
@@ -160,36 +167,38 @@ def run_channel(channel,post):
 
 # here our main program starts
 def main() :
+    global last_post
+    global invalid_post_flag
+    global post
+    invalid_post_flag = False
     last_post_flag = False
     post = 0
+    with open('channels_data.csv') as f:
+        channel_list=[tuple(line) for line in csv.reader(f)] #update with the file
     while True : #an infinite loop 
         if len(channel_list) < 2 :
             sys.exit("No Channel Data Found!. Exiting...")
         start_time = int(time())
+        with open('channels_data.csv') as f:
+            channel_list=[tuple(line) for line in csv.reader(f)] #update with the file
         for channel in channel_list[1:] : #get everything except headers
-            global last_post
-            if last_post_flag == False :
-                last_post = int(channel[1]) # get the last post
-            else :
-                last_post = post # get the last post
-            #now run a loop untill its all next posts get that number of views
+            last_post = int(channel[1])
             while True :
                 post = last_post + 1
                 result = validate(channel=channel[0],post=str(post)) # check if it is valid or invalid post
-                if result == True :
+                if result == True:
                     run_channel(channel,post)
                     thread = threading.Thread(target=run_channel,args=(channel,post))
                     threads.append(thread)
                     thread.start()
                 else : # if it is invalid post
-                    delete_csv(channel)
-                    data_tuple = (channel[0],post-1,channel[2])
-                    save_as_csv(data_tuple)
-                    last_post_flag = True
-                    if channel[1] != last_post :
-                        post = last_post
+                    channel_list.append((channel[0],last_post,channel[2]))
+                    channel_list.remove(channel)
                     print("All New Posts Were Given Views to channel "+ channel[0] +",All Threads Terminated...")
                     break
+            with open('channels_data.csv','w') as out:
+                csv_out=csv.writer(out)
+                csv_out.writerows(channel_list)
         #checking if operation took more than 60 secs
         if int(time()) - start_time > 60:
             pass #do nothing and restart the cycle
@@ -209,10 +218,9 @@ def get_and_save_data():
     get_no_of_views()
     data_tuple = (channel_id,post_id,no_of_views)
     save_as_csv(data_tuple)
-
+    with open('channels_data.csv') as f:
+        channel_list=[tuple(line) for line in csv.reader(f)]
 
 get_and_save_data()
-# start execution
-with open('channels_data.csv') as f:
-    channel_list=[tuple(line) for line in csv.reader(f)]
+# # start execution
 main()
