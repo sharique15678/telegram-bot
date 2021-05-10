@@ -17,11 +17,10 @@ for proxy in proxies_raw:
     proxies.append(p)
 
 
-global channel_list
 
+global channel_list
 channel_list = [('Channel ID', "last_post", "views_required")] 
-# its just to ionitialize a variable we will update its value with file later
-#updating channel_list
+# its just to initialize a variable we will update its value with file later
 
 channel_id = ""
 post_id = ""
@@ -44,7 +43,7 @@ def validate(channel=None,post="1") :
 # functions to take all required information
 def get_channel_id() :
     global channel_id
-    channel_id = input("Enter Channel ID (Press enter to start immidietly) ~> ")
+    channel_id = input("Enter Channel ID (Press enter to start immediately) ~> ")
     if channel_id == "":  # if it is blank
         main()
     else:  # if it is any other name
@@ -78,25 +77,21 @@ def get_no_of_views() :
         get_no_of_views()
 
 def save_as_csv(data_tuple) :
-    # try:
-    #     print('updating')
-    #     with open('channels_data.csv') as f:
-    #         channel_list=[tuple(line) for line in csv.reader(f)] #update with the file
-    # except :
-    #     pass
-    already_in_list_flag = False
-    #check if it is already in dictionary
-    for channel in channel_list :
-        if channel_id == channel[0]:
+    global channel_list
+    for channel in channel_list[1:] :
+        print(channel[0],data_tuple[0])
+        if data_tuple[0] == channel[0]:
             print('removed')
             delete_csv(channel) #first remove then update new values
             channel_list.append(data_tuple)
-    if already_in_list_flag == True :
-        #do nothing (just for not being in a for loop)
-        pass
-    else :
-        channel_list.append(data_tuple)
-    # save this data in a CSV file
+            break
+        else:
+            channel_list.append(data_tuple)
+            break
+    if len(channel_list) == 1:
+        channel_list.append(data_tuple)    
+    print(channel_list)
+    channel_list = [t for t in channel_list if t]
     with open('channels_data.csv','w') as out:
         csv_out=csv.writer(out)
         csv_out.writerows(channel_list)
@@ -108,7 +103,7 @@ def delete_csv(data_tuple) :
         pass
 
 
-#functions for doing views incrementation work
+#functions for views increment
 def fetchData(channel='google', post='1', proxy=None):
     try:
         r = requests.get('https://t.me/'+channel+'/'+post+'?embed=1', verify=False, timeout=20, proxies={'https':proxy})
@@ -167,6 +162,7 @@ def run_channel(channel,post):
 
 # here our main program starts
 def main() :
+    global channel_list
     global last_post
     global invalid_post_flag
     global post
@@ -196,6 +192,7 @@ def main() :
                     channel_list.remove(channel)
                     print("All New Posts Were Given Views to channel "+ channel[0] +",All Threads Terminated...")
                     break
+            channel_list = [t for t in channel_list if t] 
             with open('channels_data.csv','w') as out:
                 csv_out=csv.writer(out)
                 csv_out.writerows(channel_list)
@@ -203,15 +200,22 @@ def main() :
         if int(time()) - start_time > 60:
             pass #do nothing and restart the cycle
         else :
-            print("In Hybernation ctrl + C to Quit...")
+            print("In Hibernation ctrl + C to Quit...")
             sleep(60-(int(time()) - start_time))
 
 def get_and_save_data():
-    #prints External IP of machine for whielisting
+    global channel_list
+    try:
+        with open('channels_data.csv') as f:
+            channel_list=[tuple(line) for line in csv.reader(f)]
+    except:
+        with open('channels_data.csv','w') as out:
+            csv_out=csv.writer(out)
+            csv_out.writerows(channel_list)
+    #prints External IP of machine for whitelisting
     IP = requests.get('https://api.ipify.org').text
     print('Your IP Is ' + IP + ' Please Whitelist It First...')
     print("press ctrl + C to exit...")
-
     #get data about channels and save them
     get_channel_id()
     get_post_id()
