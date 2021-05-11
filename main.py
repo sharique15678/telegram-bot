@@ -3,6 +3,7 @@ import threading
 import sys
 import csv
 import urllib3
+
 from time import time,sleep
 urllib3.disable_warnings()
 
@@ -22,6 +23,7 @@ global channel_list
 channel_list = [('Channel ID', "last_post", "views_required")] 
 # its just to initialize a variable we will update its value with file later
 
+# some variable to hold values
 channel_id = ""
 post_id = ""
 no_of_views = ""
@@ -171,12 +173,14 @@ def main() :
     post = 0
     with open('channels_data.csv') as f:
         channel_list=[tuple(line) for line in csv.reader(f)] #update with the file
+    channel_list = [t for t in channel_list if t] #remove any empty tuple
     while True : #an infinite loop 
         if len(channel_list) < 2 :
             sys.exit("No Channel Data Found!. Exiting...")
         start_time = int(time())
         with open('channels_data.csv') as f:
             channel_list=[tuple(line) for line in csv.reader(f)] #update with the file
+        channel_list = [t for t in channel_list if t] #remove any empty tuple
         for channel in channel_list[1:] : #get everything except headers
             last_post = int(channel[1])
             while True :
@@ -208,7 +212,8 @@ def get_and_save_data():
     try:
         with open('channels_data.csv') as f:
             channel_list=[tuple(line) for line in csv.reader(f)]
-    except:
+        channel_list = [t for t in channel_list if t] #remove any empty tuple
+    except: #eception will raise if file is not found
         with open('channels_data.csv','w') as out:
             csv_out=csv.writer(out)
             csv_out.writerows(channel_list)
